@@ -1,0 +1,25 @@
+{
+  "name": "claude-code-builder-test",
+  "version": "1.0.0",
+  "description": "Claude Code Builder测试项目",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx tsx test-builder.ts",
+    "dev": "npx tsx test-builder.ts",
+    "build": "tsc",
+    "start": "node dist/test-builder.js",
+    "server": "npx tsx server.ts",
+    "frontend": "cd frontend && npm run dev",
+    "dev:full": "npm run server"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/node-fetch": "^2.6.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "type": "module"
+}

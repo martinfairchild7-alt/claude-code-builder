@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Builder - Lovable Clone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .lovable-gradient {
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 25%, #21262d  50%, #30363d  75%, #0d1117 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .lovable-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            z-index: 1;
+            background:
+                radial-gradient(circle at 15% 25%, rgba(255, 107, 0, 0.15) 0%, transparent 45%),
+                radial-gradient(circle at 85% 15%, rgba(255, 20, 147, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 45% 85%, rgba(138, 43, 226, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 75% 75%, rgba(255, 165, 0, 0.1) 0%, transparent 35%);
+            animation: gradientFloat 20s ease-in-out infinite;
+        }
+        .lovable-gradient::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            background:
+                radial-gradient(circle at 25% 75%, rgba(255, 69, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 75% 25%, rgba(255, 105, 180, 0.06) 0%, transparent 55%);
+            animation: gradientFloat 25s ease-in-out infinite reverse;
+        }
+        @keyframes gradientFloat {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            33% {
+                transform: translate(-3%, -2%) scale(1.1);
+                opacity: 0.8;
+            }
+            66% {
+                transform: translate(3%, 2%) scale(0.9);
+                opacity: 0.9;
+            }
+        }
+        .arrow-button {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
+        }
+        .arrow-button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 107, 107, 0.4);
+        }
+        .arrow-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen lovable-gradient">
+        <div class="container mx-auto px-4 py-8 relative z-10">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                    Claude Builder
+                </h1>
+                <p class="text-xl text-white/90 max-w-2xl mx-auto">
+                    Transform your ideas into beautiful, functional code with AI-powered development
+                </p>
+            </div>
+
+            <!-- Main Content -->
+            <div class="max-w-4xl mx-auto relative z-20">
+                <!-- Input Section -->
+                <div class="bg-white/10 backdrop-blur-md rounded-3xl p-8 mb-8 border border-white/20 shadow-2xl">
+                    <form id="codeForm" class="space-y-6">
+                        <div>
+                            <label for="prompt" class="block text-white text-lg font-medium mb-3">
+                                Describe what you want to build
+                            </label>
+                            <textarea
+                                id="prompt"
+                                class="w-full h-32 px-6 py-4 rounded-2xl bg-white/90 backdrop-blur-sm border-0
+                                       focus:ring-4 focus:ring-white/30 focus:outline-none resize-none
+                                       text-gray-800 placeholder-gray-500 text-lg leading-relaxed
+                                       shadow-inner transition-all duration-300"
+                                placeholder="Describe your app idea... (e.g., 'Create a todo app with dark mode toggle and local storage')"
+                            ></textarea>
+                            <div class="flex justify-between items-center mt-3">
+                                <span id="charCount" class="text-white/70 text-sm">
+                                    0 characters
+                                </span>
+                                <div class="flex flex-wrap gap-3 justify-end">
+                                    <!-- Generate Button -->
+                                    <button
+                                        type="submit"
+                                        id="generateBtn"
+                                        class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white
+                                               font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105
+                                               transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
+                                               disabled:transform-none disabled:shadow-lg flex items-center space-x-2"
+                                        title="Generate Code Only"
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 19V5M5 12l7-7 7 7"/>
+                                        </svg>
+                                        <span>Generate</span>
+                                    </button>
+
+                                    <!-- Save & Run Button -->
+                                    <button
+                                        type="button"
+                                        id="saveAndRunBtn"
+                                        class="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white
+                                               font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105
+                                               transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
+                                               disabled:transform-none disabled:shadow-lg flex items-center space-x-2"
+                                        title="Save & Run Immediately"
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                            <polyline points="14,2 14,8 20,8"/>
+                                            <circle cx="12" cy="15" r="3"/>
+                                            <path d="m9 18 3-3 3 3"/>
+                                        </svg>
+                                        <span>Save & Run</span>
+                                    </button>
+
+                                    <!-- Stop Button -->
+                                    <button
+                                        type="button"
+                                        id="stopBtn"
+                                        class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white
+                                               font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105
+                                               transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
+                                               disabled:transform-none disabled:shadow-lg flex items-center space-x-2 hidden"
+                                        title="Stop Generation"
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="6" y="6" width="12" height="12"/>
+                                        </svg>
+                                        <span>Stop</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Status and Logs Section -->
+                    <div id="statusSection" class="mt-6 space-y-4">
+                        <div id="errorDiv" class="p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-white hidden">
+                        </div>
+
+                        <div id="logsContainer" class="hidden">
+                            <div class="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-white font-medium flex items-center">
+                                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Processing Logs
+                                    </h4>
+                                    <button id="clearLogs" class="text-gray-400 hover:text-white text-sm">Clear</button>
+                                </div>
+                                <div id="logsContent" class="bg-black/30 rounded-lg p-3 max-h-40 overflow-y-auto">
+                                    <div class="text-green-400 text-sm font-mono leading-relaxed"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="processingStatus" class="hidden">
+                            <div class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+                                <div class="flex items-center">
+                                    <svg class="animate-spin h-5 w-5 text-blue-400 mr-3" fill="none" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/>
+                                        <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"/>
+                                    </svg>
+                                    <span class="text-blue-400 font-medium">Claude is analyzing your request...</span>
+                                </div>
+                                <div id="stepIndicator" class="mt-3 text-sm text-blue-300">
+                                    Step 1: Sending request to Claude API...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div id="resultsSection" class="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-white">Generated Code</h3>
+                        <div class="flex space-x-3">
+                            <span id="languageTag" class="px-3 py-1 bg-white/20 rounded-full text-white text-sm">
+                            </span>
+                            <button
+                                id="runBtn"
+                                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl
+                                       transition-colors duration-200 text-sm font-medium mr-2"
+                            >
+                                Run
+                            </button>
+                            <button
+                                id="downloadBtn"
+                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl
+                                       transition-colors duration-200 text-sm font-medium"
+                            >
+                                Download
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Code Preview -->
+                        <div class="bg-gray-900 rounded-2xl overflow-hidden">
+                            <div class="bg-gray-800 px-4 py-2 flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span class="text-gray-400 text-sm ml-2">Generated Code</span>
+                            </div>
+                            <pre id="codePreview" class="p-6 text-green-400 font-mono text-sm overflow-x-auto leading-relaxed">
+                            </pre>
+                        </div>
+
+                        <!-- Explanation -->
+                        <div class="bg-white/5 rounded-2xl p-6">
+                            <h4 class="text-lg font-semibold text-white mb-3">Explanation</h4>
+                            <p id="explanationText" class="text-white/80 leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentResult = null;
+        let currentController = null;
+
+        const promptTextarea = document.getElementById('prompt');
+        const charCount = document.getElementById('charCount');
+        const generateBtn = document.getElementById('generateBtn');
+        const saveAndRunBtn = document.getElementById('saveAndRunBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const errorDiv = document.getElementById('errorDiv');
+        const resultsSection = document.getElementById('resultsSection');
+        const codePreview = document.getElementById('codePreview');
+        const explanationText = document.getElementById('explanationText');
+        const languageTag = document.getElementById('languageTag');
+        const runBtn = document.getElementById('runBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const codeForm = document.getElementById('codeForm');
+
+        // New log elements
+        const logsContainer = document.getElementById('logsContainer');
+        const logsContent = document.getElementById('logsContent').firstElementChild;
+        const processingStatus = document.getElementById('processingStatus');
+        const stepIndicator = document.getElementById('stepIndicator');
+        const clearLogsBtn = document.getElementById('clearLogs');
+
+        // Log management
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `mb-1 ${type === 'error' ? 'text-red-400' : type === 'success' ? 'text-green-400' : 'text-blue-400'}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logsContent.appendChild(logEntry);
+            logsContainer.classList.remove('hidden');
+
+            // Auto-scroll to bottom
+            logsContent.scrollTop = logsContent.scrollHeight;
+        }
+
+        function updateStep(step) {
+            stepIndicator.textContent = step;
+        }
+
+        function showProcessing(show = true) {
+            if (show) {
+                processingStatus.classList.remove('hidden');
+            } else {
+                processingStatus.classList.add('hidden');
+            }
+        }
+
+        // Clear logs
+        clearLogsBtn.addEventListener('click', function() {
+            logsContent.innerHTML = '';
+            logsContainer.classList.add('hidden');
+        });
+
+        // Character count
+        promptTextarea.addEventListener('input', function() {
+            charCount.textContent = this.value.length + ' characters';
+        });
+
+        // Common function to generate code
+        async function generateCode(saveAndRun = false) {
+            const prompt = promptTextarea.value.trim();
+            if (!prompt) return;
+
+            // Create new abort controller for this request
+            currentController = new AbortController();
+
+            // Disable both buttons and show stop button
+            generateBtn.disabled = true;
+            saveAndRunBtn.disabled = true;
+            stopBtn.classList.remove('hidden');
+
+            // Update button states
+            if (saveAndRun) {
+                saveAndRunBtn.innerHTML = `
+                    <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/>
+                        <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"/>
+                    </svg>
+                    <span>Processing...</span>
+                `;
+            } else {
+                generateBtn.innerHTML = `
+                    <svg class="animate-spin h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/>
+                        <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"/>
+                    </svg>
+                `;
+            }
+
+            errorDiv.classList.add('hidden');
+            resultsSection.classList.add('hidden');
+            showProcessing(true);
+
+            // Add logs
+            const actionText = saveAndRun ? 'save and run' : 'generate';
+            addLog(`🚀 Starting to ${actionText} code for prompt: "${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''}"`, 'info');
+            updateStep('Step 1: Analyzing your request...');
+
+            try {
+                addLog('📡 Sending request to Claude Builder API...', 'info');
+                updateStep('Step 2: Connecting to Claude API...');
+
+                const startTime = Date.now();
+                const response = await fetch('http://localhost:3001/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt, saveAndRun }),
+                    signal: currentController.signal
+                });
+
+                addLog(`📊 API Response received (${response.status} ${response.statusText})`, 'info');
+                updateStep('Step 3: Processing Claude response...');
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to generate code');
+                }
+
+                currentResult = await response.json();
+                const processingTime = ((Date.now() - startTime) / 1000).toFixed(2);
+
+                addLog(`✅ Code generated successfully in ${processingTime}s`, 'success');
+                addLog(`📋 Language: ${currentResult.language}`, 'info');
+                addLog(`📏 Code length: ${currentResult.code.length} characters`, 'info');
+
+                if (saveAndRun && currentResult.filePath) {
+                    addLog(`💾 Code saved to: ${currentResult.filePath}`, 'success');
+                    if (currentResult.runUrl) {
+                        addLog(`🌐 Opened in browser: ${currentResult.runUrl}`, 'success');
+                    }
+                }
+
+                updateStep('Step 4: Rendering results...');
+
+                // Show results with delay for better UX
+                setTimeout(() => {
+                    codePreview.textContent = currentResult.code;
+                    explanationText.textContent = currentResult.explanation;
+                    languageTag.textContent = currentResult.language;
+                    resultsSection.classList.remove('hidden');
+
+                    addLog('🎉 Code generation completed!', 'success');
+                    showProcessing(false);
+                }, 500);
+
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    addLog('⏹️ Generation stopped by user', 'info');
+                    errorDiv.textContent = 'Generation stopped by user.';
+                    errorDiv.classList.remove('hidden');
+                } else {
+                    const errorMessage = error.message || 'Failed to generate code. Please try again.';
+                    addLog(`❌ Error: ${errorMessage}`, 'error');
+
+                    // 提供特定的用户建议
+                    let userMessage = errorMessage;
+                    if (errorMessage.includes('超时') || errorMessage.includes('timeout')) {
+                        userMessage = '⏰ API响应超时。这通常是因为请求较复杂，请稍等片刻后重试。';
+                        addLog('💡 建议：尝试简化您的prompt或稍后重试', 'info');
+                    } else if (errorMessage.includes('524')) {
+                        userMessage = '🌐 服务器临时过载。请稍后重试，我们已经自动进行了重试尝试。';
+                    }
+
+                    errorDiv.textContent = userMessage;
+                    errorDiv.classList.remove('hidden');
+                }
+                showProcessing(false);
+            } finally {
+                // Reset buttons and hide stop button
+                generateBtn.disabled = false;
+                saveAndRunBtn.disabled = false;
+                stopBtn.classList.add('hidden');
+                currentController = null;
+
+                generateBtn.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-white">
+                        <path d="M12 19V5M5 12l7-7 7 7"/>
+                    </svg>
+                `;
+
+                saveAndRunBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <circle cx="12" cy="15" r="3"/>
+                        <path d="m9 18 3-3 3 3"/>
+                    </svg>
+                    <span>Save & Run</span>
+                `;
+            }
+        }
+
+        // Form submission for generate button
+        codeForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await generateCode(false);
+        });
+
+        // Save and run button
+        saveAndRunBtn.addEventListener('click', async function() {
+            await generateCode(true);
+        });
+
+        // Stop button
+        stopBtn.addEventListener('click', function() {
+            if (currentController) {
+                currentController.abort();
+                addLog('🛑 Stopping generation...', 'info');
+            }
+        });
+
+        // Run button - for already generated code
+        runBtn.addEventListener('click', async function() {
+            if (!currentResult) return;
+
+            runBtn.disabled = true;
+            runBtn.innerHTML = `
+                <svg class="animate-spin h-4 w-4 inline mr-2" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/>
+                    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"/>
+                </svg>
+                Running...
+            `;
+
+            try {
+                addLog('🚀 Running generated code...', 'info');
+
+                const response = await fetch('http://localhost:3001/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: 'Run the already generated code',
+                        saveAndRun: true,
+                        code: currentResult.code,
+                        language: currentResult.language
+                    }),
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.runUrl) {
+                        addLog(`🌐 Code executed and opened: ${result.runUrl}`, 'success');
+                    }
+                    if (result.filePath) {
+                        addLog(`💾 Code saved to: ${result.filePath}`, 'success');
+                    }
+                } else {
+                    throw new Error('Failed to run code');
+                }
+            } catch (error) {
+                addLog(`❌ Error running code: ${error.message}`, 'error');
+            } finally {
+                runBtn.disabled = false;
+                runBtn.innerHTML = 'Run';
+            }
+        });
+
+        // Download functionality
+        downloadBtn.addEventListener('click', function() {
+            if (!currentResult) return;
+
+            const blob = new Blob([currentResult.code], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+
+            let extension = 'txt';
+            if (currentResult.language === 'html') extension = 'html';
+            else if (currentResult.language === 'javascript') extension = 'js';
+            else if (currentResult.language === 'typescript') extension = 'ts';
+            else if (currentResult.language === 'css') extension = 'css';
+            else if (currentResult.language === 'python') extension = 'py';
+
+            const filename = `generated-code.${extension}`;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            addLog(`💾 Downloaded: ${filename} (${currentResult.code.length} characters)`, 'success');
+        });
+    </script>
+</body>
+</html>
