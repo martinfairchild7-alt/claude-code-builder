@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect 4</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .board {
+            display: inline-block;
+            background-color: #0066cc;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #004499;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 2px;
+            background-color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .cell:hover {
+            background-color: #f0f0f0;
+        }
+        .cell.red {
+            background-color: #ff4444;
+        }
+        .cell.yellow {
+            background-color: #ffdd00;
+        }
+        .row {
+            display: block;
+        }
+        .status {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #0066cc;
+            color: white;
+        }
+        button:hover {
+            background-color: #004499;
+        }
+        .winner {
+            color: #00aa00;
+        }
+        .draw {
+            color: #ff6600;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Connect 4</h1>
+        <div class="status" id="status">Player 1's Turn (Red)</div>
+        <div class="board" id="board"></div>
+        <div class="controls">
+            <button onclick="resetGame()">New Game</button>
+        </div>
+    </div>
+
+    <script>
+        class Connect4 {
+            constructor() {
+                this.rows = 6;
+                this.cols = 7;
+                this.board = [];
+                this.currentPlayer = 1; // 1 for red, 2 for yellow
+                this.gameOver = false;
+                this.initBoard();
+                this.renderBoard();
+            }
+
+            // Initialize empty board
+            initBoard() {
+                this.board = [];
+                for (let row = 0; row < this.rows; row++) {
+                    this.board[row] = new Array(this.cols).fill(0);
+                }
+            }
+
+            // Render the game board in HTML
+            renderBoard() {
+                const boardElement = document.getElementById('board');
+                boardElement.innerHTML = '';
+                
+                for (let row = 0; row < this.rows; row++) {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = 'row';
+                    
+                    for (let col = 0; col < this.cols; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.col = col;
+                        
+                        // Add piece color based on board state
+                        if (this.board[row][col] === 1) {
+                            cell.classList.add('red');
+                        } else if (this.board[row][col] === 2) {
+                            cell.classList.add('yellow');
+                        }
+                        
+                        // Add click event listener only for top row
+                        if (row === 0 && !this.gameOver) {
+                            cell.addEventListener('click', () => this.dropPiece(col));
+                        }
+                        
+                        rowDiv.appendChild(cell);
+                    }
+                    
+                    boardElement.appendChild(rowDiv);
+                }
+            }
+
+            // Drop a piece in the specified column
+            dropPiece(col) {
+                if (this.gameOver) return false;
+                
+                // Find the lowest empty row in this column
+                for (let row = this.rows - 1; row >= 0; row--) {
+                    if (this.board[row][col] === 0) {
+                        this.board[row][col] = this.currentPlayer;
+                        
+                        // Check for win condition
+                        if (this.checkWin(row, col)) {
+                            this.gameOver = true;
+                            this.updateStatus(`Player ${this.currentPlayer} Wins!`, 'winner');
+                        } else if (this.isBoardFull()) {
+                            this.gameOver = true;
+                            this.updateStatus('Game Draw!', 'draw');
+                        } else {
+                            // Switch players
+                            this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+                            const playerName = this.currentPlayer === 1 ? 'Player 1 (Red)' : 'Player 2 (Yellow)';
+                            this.updateStatus(`${playerName}'s Turn`);
+                        }
+                        
+                        this.renderBoard();
+                        return true;
+                    }
+                }
+                
+                return false; // Column is full
+            }
+
+            // Check if there's a winning combination starting from the given position
+            checkWin(row, col) {
+                const player = this.board[row][col];
+                
+                // Check horizontal
+                if (this.checkDirection(row, col, 0, 1, player) || 
+                    this.checkDirection(row, col, 0, -1, player)) {
+                    return true;
+                }
+                
+                // Check vertical
+                if (this.checkDirection(row, col, 1, 0, player) || 
+                    this.checkDirection(row, col, -1, 0, player)) {
+                    return true;
+                }
+                
+                // Check diagonal (top-left to bottom-right)
+                if (this.checkDirection(row, col, 1, 1, player) || 
+                    this.checkDirection(row, col, -1, -1, player)) {
+                    return true;
+                }
+                
+                // Check diagonal (top-right to bottom-left)
+                if (this.checkDirection(row, col, 1, -1, player) || 
+                    this.checkDirection(row, col, -1, 1, player)) {
+                    return true;
+                }
+                
+                return false;
+            }
+
+            // Check for 4 consecutive pieces in a specific direction
+            checkDirection(row, col, deltaRow, deltaCol, player) {
+                let count = 1; // Count the current piece
+                
+                // Check in positive direction
+                let r = row + deltaRow;
+                let c = col + deltaCol;
+                while (r >= 0 && r < this.rows && c >= 0 && c < this.cols && 
+                       this.board[r][c] === player) {
+                    count++;
+                    r += deltaRow;
+                    c += deltaCol;
+                }
+                
+                // Check in negative direction
+                r = row - deltaRow;
+                c = col - deltaCol;
+                while (r >= 0 && r < this.rows && c >= 0 && c < this.cols && 
+                       this.board[r][c] === player) {
+                    count++;
+                    r -= deltaRow;
+                    c -= deltaCol;
+                }
+                
+                return count >= 4;
+            }
+
+            // Check if the board is completely full
+            isBoardFull() {
+                for (let col = 0; col < this.cols; col++) {
+                    if (this.board[0][col] === 0) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            // Update the status message
+            updateStatus(message, className = '') {
+                const statusElement = document.getElementById('status');
+                statusElement.textContent = message;
+                statusElement.className = 'status ' + className;
+            }
+
+            // Reset the game to initial state
+            reset() {
+                this.gameOver = false;
+                this.currentPlayer = 1;
+                this.initBoard();
+                this.updateStatus('Player 1\'s Turn (Red)');
+                this.renderBoard();
+            }
+        }
+
+        // Global game instance
+        let game;
+
+        // Initialize game when page loads
+        window.addEventListener('load', () => {
+            game = new Connect4();
+        });
+
+        // Reset game function for button
+        function resetGame() {
+            if (game) {
+                game.reset();
+            }
+        }
+    </script>
+</body>
+</html>
